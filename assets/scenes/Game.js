@@ -1,5 +1,5 @@
 import { SHAPES, POINTS_PERCENTAGE, POINTS_PERCENTAGE_VALUE_START } from '../../utils.js';
-const { TRIANGLE, SQUARE, DIAMOND } = SHAPES;
+const { TRIANGLE, SQUARE, DIAMOND, STAR } = SHAPES;
 
 export default class Game extends Phaser.Scene {
   score;
@@ -15,6 +15,7 @@ export default class Game extends Phaser.Scene {
       [TRIANGLE]: { count: 0, score: 10},
       [SQUARE]: { count: 0, score: 20 },
       [DIAMOND]: { count: 0, score: 30 },
+      [STAR]: { count: 0, score: -30 },
     };
     console.log(this.shapesRecolected)
   }
@@ -26,6 +27,8 @@ export default class Game extends Phaser.Scene {
     // add static platforms group
     let platforms = this.physics.add.staticGroup();
     platforms.create(400, 568, "ground").setScale(2).refreshBody();
+    platforms.create(1000, 350, "ground").setScale(2).refreshBody();
+    platforms.create(-250, 350, "ground").setScale(2).refreshBody();
 
     // add shapes group
     this.shapesGroup = this.physics.add.group();
@@ -34,7 +37,7 @@ export default class Game extends Phaser.Scene {
     // this.shapesGroup.create(300, 0, 'square');
     // create event to add shapes
     this.time.addEvent({
-      delay: 3000,
+      delay: 500,
       callback: this.addShape,
       callbackScope: this,
       loop: true,
@@ -79,14 +82,22 @@ export default class Game extends Phaser.Scene {
 
     // add score on scene
     this.score = 0;
-    this.scoreText = this.add.text(20, 20, "Score:" + this.score, {
+    this.scoreText = this.add.text(20, 5, "Score:" + this.score, {
       fontSize: "32px",
       fontStyle: "bold",
       fill: "#FFFFFF",
     });
 
+    this.PointsText = this.add.text(16, 30, "T: 0 / S: 0 / D: 0", {
+      fontSize: "20px",
+      fill:"#ffffff",
+      fontFamily: "arial",
+      fontWeight:"bold",
+    });
+
+    
     // add timer
-    this.timer = 10;
+    this.timer = 40;
     this.timerText = this.add.text(750, 20, this.timer, {
       fontSize: "32px",
       fontStyle: "bold",
@@ -96,13 +107,20 @@ export default class Game extends Phaser.Scene {
 
   update() {
     // the player has won the game
-    if (this.score>200) {
+    if (
+      this.shapesRecolected[TRIANGLE].count >= 2 &&
+      this.shapesRecolected[SQUARE].count >= 2 &&
+      this.shapesRecolected[DIAMOND].count >= 2
+    ) {
+      this.scene.start("Win")
+    }
+    if (this.score>100) {
       this.scene.start("Win");
     }
 
     // the player has lost the game
     if(this.gameOver){
-      // this.scene.start("GameOver");
+      this.scene.start("GameOver");
     }
 
     // update player movement
@@ -128,7 +146,7 @@ export default class Game extends Phaser.Scene {
    */
   addShape() {
     // get random shape
-    const randomShape = Phaser.Math.RND.pick([DIAMOND, SQUARE, TRIANGLE]);
+    const randomShape = Phaser.Math.RND.pick([DIAMOND, SQUARE, TRIANGLE, STAR]);
 
     // get random position x
     const randomX = Phaser.Math.RND.between(0, 800);
@@ -156,7 +174,16 @@ export default class Game extends Phaser.Scene {
     this.scoreText.setText(`Score: ${this.score.toString()}`);
     
     this.shapesRecolected[shapeName].count++;
-  }
+
+  this.PointsText.setText(
+    "T: " +
+      this.shapesRecolected[TRIANGLE].count +
+      "/ S: " +
+      this.shapesRecolected[SQUARE].count +
+      "/ D: " +
+      this.shapesRecolected[DIAMOND].count
+  );
+}
 
   onSecond(){
     this.timer--;

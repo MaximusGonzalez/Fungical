@@ -1,7 +1,8 @@
 const SHAPES = {
     TRIANGLE: 'triangle',
     SQUARE: 'square',
-    DIAMOND: 'diamond'
+    DIAMOND: 'diamond',
+    STAR: 'star'
 }
 
 const POINTS_PERCENTAGE = "value";
