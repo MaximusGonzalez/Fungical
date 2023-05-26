@@ -21,21 +21,16 @@ export default class Game extends Phaser.Scene {
   }
 
   create() {
-    // add background
+
     this.add.image(400, 300, "sky").setScale(0.555);
 
-    // add static platforms group
     let platforms = this.physics.add.staticGroup();
     platforms.create(400, 568, "ground").setScale(2).refreshBody();
     platforms.create(1000, 350, "ground").setScale(2).refreshBody();
     platforms.create(-250, 350, "ground").setScale(2).refreshBody();
 
-    // add shapes group
     this.shapesGroup = this.physics.add.group();
-    // this.shapesGroup.create(100, 0, 'diamond');
-    // this.shapesGroup.create(200, 0, 'triangle');
-    // this.shapesGroup.create(300, 0, 'square');
-    // create event to add shapes
+
     this.time.addEvent({
       delay: 500,
       callback: this.addShape,
@@ -49,28 +44,22 @@ export default class Game extends Phaser.Scene {
       callbackScope: this,
       loop: true,
     });
-    
-    // add sprite player
+
     this.player = this.physics.add.sprite(100, 450, "ninja");
     this.player.setCollideWorldBounds(true);
-    
-    // create cursors
+
     this.cursors = this.input.keyboard.createCursorKeys();
-    
-    // add collider between player and platforms
-    // add collider between player and shapes
-    // add overlap between player and shapes
+
     this.physics.add.collider(this.player, platforms);
     this.physics.add.collider(this.player, this.shapesGroup);
     this.physics.add.collider(platforms, this.shapesGroup);
 
-    // add overlap between player and shapes
     this.physics.add.overlap(
       this.player,
       this.shapesGroup,
-      this.collectShape, // funcion que llama cuando player choca con shape
-      null, //dejar fijo por ahora
-      this //dejar fijo por ahora
+      this.collectShape, 
+      null, 
+      this 
     );
     this.physics.add.overlap(
       this.shapesGroup,
@@ -80,7 +69,6 @@ export default class Game extends Phaser.Scene {
       this
     );
 
-    // add score on scene
     this.score = 0;
     this.scoreText = this.add.text(20, 5, "Score:" + this.score, {
       fontSize: "32px",
@@ -95,8 +83,6 @@ export default class Game extends Phaser.Scene {
       fontWeight:"bold",
     });
 
-    
-    // add timer
     this.timer = 40;
     this.timerText = this.add.text(750, 20, this.timer, {
       fontSize: "32px",
@@ -106,7 +92,6 @@ export default class Game extends Phaser.Scene {
   }
 
   update() {
-    // the player has won the game
     if (
       this.shapesRecolected[TRIANGLE].count >= 2 &&
       this.shapesRecolected[SQUARE].count >= 2 &&
@@ -118,12 +103,10 @@ export default class Game extends Phaser.Scene {
       this.scene.start("Win");
     }
 
-    // the player has lost the game
     if(this.gameOver){
       this.scene.start("GameOver");
     }
 
-    // update player movement
     if (this.cursors.left.isDown) {
       this.player.setVelocityX(-250);
     } else {
@@ -134,24 +117,17 @@ export default class Game extends Phaser.Scene {
       }
     }
 
-    // update player jump
     if (this.cursors.up.isDown && this.player.body.touching.down) {
       this.player.setVelocityY(-330);
     }
   }
 
-  /**
-   * This function adds a randomly selected shape to the screen with a random x position, sets its
-   * properties, and logs a message.
-   */
   addShape() {
-    // get random shape
+
     const randomShape = Phaser.Math.RND.pick([DIAMOND, SQUARE, TRIANGLE, STAR]);
 
-    // get random position x
     const randomX = Phaser.Math.RND.between(0, 800);
 
-    // add shape to screen
     this.shapesGroup.create(randomX, 0, randomShape)
       .setCircle(32, 0, 0)
       .setBounce(0.8)
@@ -160,10 +136,6 @@ export default class Game extends Phaser.Scene {
     console.log("shape is added", randomX, randomShape);
   }
 
-  /**
-   * This function collects a shape, updates the player's score, and increments the count of the
-   * collected shape.
-  */
   collectShape(player, shape) {
     shape.disableBody(true, true);
 
@@ -193,10 +165,6 @@ export default class Game extends Phaser.Scene {
     }
   }
 
-  /**
-   * The reduce function decreases the percentage of points for a given shape and disables it if the
-   * percentage reaches zero, while also displaying a text indicating the reduction.
-   */
   reduce(shape, platform){
     const newPercentage = shape.getData(POINTS_PERCENTAGE) - 0.25;
     console.log(shape.texture.key, newPercentage);
@@ -206,7 +174,6 @@ export default class Game extends Phaser.Scene {
       return;
     }
 
-    // show text
     const text = this.add.text(shape.body.position.x+10, shape.body.position.y, "- 25%", {
       fontSize: "22px",
       fontStyle: "bold",
